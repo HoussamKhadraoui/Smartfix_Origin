@@ -1,0 +1,51 @@
+#version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./Back_Symfony
+      dockerfile: Dockerfile
+    volumes:
+      - ./Back_Symfony:/var/www/html
+    ports:
+      - "85:85"
+    environment:
+      SYMFONY_ENV: dev
+      DATABASE_URL: "mysql://root:password@smartfix_db:3307/symfony"
+    depends_on:
+      - database
+
+  frontend:
+    build:
+      context: ./frontend_vue
+      dockerfile: Dockerfile 
+    volumes:
+      - ./frontend_vue:/app
+    ports:
+      - "8082:8082"
+    depends_on:
+      - backend
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: symfony
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3307"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOST: database
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"
+    depends_on:
+      - database
+
+volumes:
+  mysql_data:
